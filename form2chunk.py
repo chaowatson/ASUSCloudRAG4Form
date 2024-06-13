@@ -33,10 +33,13 @@ def generateChunk(file_path: str, token_limit: int) -> str:
     if FILE_TYPE in ['.xlsx', '.xls']:
         sheets = pd.ExcelFile(file_path).sheet_names
         data_string = ''
+        last_headers = '' 
         for sheet in sheets:
             data_list = jsonConverter(file_path, FILE_TYPE, f'{{"sheet_name": "{sheet}"}}')
-            token_counter = 0
             new_line = '\n'
+            if str(data_list[0].keys()) != last_headers:
+                data_string += new_line
+                token_counter = 0
             print("\nCalculating tokens\n")
             for row in data_list:
                 tokenized_size = getTokenizedSize(str(row))
@@ -45,9 +48,8 @@ def generateChunk(file_path: str, token_limit: int) -> str:
                     token_counter = 0
                     data_string += new_line
                 data_string += str(row)
-            data_string += new_line
+            last_headers = str(data_list[0].keys())
     else:
-
         data_list = jsonConverter(file_path, '{"sheet_name": None}')
         token_counter = 0
         data_string = ''
