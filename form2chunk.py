@@ -17,7 +17,7 @@ def parseArguments():
     parser.add_argument('source_file', help="path of source file to be sliced. Ex: ./src.xlsx")
     parser.add_argument('destination_file', help="path of output file. Ex: ./output.txt")
     parser.add_argument('-t','--token_limit', type=int, default=1000, help="token limit for slicing, default value is 1000")
-    parser.add_argument('-s','--split', action='store_true', help="Split excel sheets and insicates sheet names in new column.")
+    parser.add_argument('-s','--split', action='store_true', help="Split excel sheets and indicates sheet names in new column.")
     args = parser.parse_args()
     global TOKEN_LIMIT
     global SRC_FILE_PATH
