@@ -4,11 +4,12 @@ import pandas as pd
 import math
 import json
 import argparse
-
+import os
 
 TOKEN_LIMIT = None
 SRC_FILE_PATH = None
 DES_FILE_PATH = None
+FILE_TYPE = None
 ARG = {}
 
 def parseArguments():
@@ -21,25 +22,44 @@ def parseArguments():
     global TOKEN_LIMIT
     global SRC_FILE_PATH
     global DES_FILE_PATH
+    global FILE_TYPE
     TOKEN_LIMIT = args.token_limit
     SRC_FILE_PATH = args.source_file
     DES_FILE_PATH = args.destination_file
-
+    _, ext = os.path.splitext(SRC_FILE_PATH)
+    FILE_TYPE = ext
 
 def generateChunk(file_path: str, token_limit: int) -> str:
-    data_list = jsonConverter(file_path, '{"sheet_name": None}')
-    token_counter = 0
-    print(pd.ExcelFile(file_path).sheet_names)
-    data_string = ''
-    new_line = '\n'
-    print("\nCalculating tokens\n")
-    for row in data_list:
-        tokenized_size = getTokenizedSize(str(row))
-        token_counter += tokenized_size
-        if token_counter > token_limit:
+    if FILE_TYPE in ['.xlsx', '.xls']:
+        sheets = pd.ExcelFile(file_path).sheet_names
+        data_string = ''
+        for sheet in sheets:
+            data_list = jsonConverter(file_path, FILE_TYPE, f'{{"sheet_name": "{sheet}"}}')
             token_counter = 0
+            new_line = '\n'
+            print("\nCalculating tokens\n")
+            for row in data_list:
+                tokenized_size = getTokenizedSize(str(row))
+                token_counter += tokenized_size
+                if token_counter > token_limit:
+                    token_counter = 0
+                    data_string += new_line
+                data_string += str(row)
             data_string += new_line
-        data_string += str(row)
+    else:
+
+        data_list = jsonConverter(file_path, '{"sheet_name": None}')
+        token_counter = 0
+        data_string = ''
+        new_line = '\n'
+        print("\nCalculating tokens\n")
+        for row in data_list:
+            tokenized_size = getTokenizedSize(str(row))
+            token_counter += tokenized_size
+            if token_counter > token_limit:
+                token_counter = 0
+                data_string += new_line
+            data_string += str(row)
 
     return data_string
 

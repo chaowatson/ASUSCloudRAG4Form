@@ -34,7 +34,7 @@ def AdjustValidHeaders(df: pd.DataFrame)-> pd.DataFrame:
         return AdjustValidHeaders(df)
     else:
         return df
-
+'''
 def mergeDF(df: dict) -> pd.DataFrame:
     # merge sheets based on header of first sheet
     for key, value in df.items() :
@@ -50,16 +50,17 @@ def mergeDF(df: dict) -> pd.DataFrame:
             del df[key]
     df = pd.concat(df.values(), axis=0, ignore_index=True)
     return df
-
-def jsonConverter(file_path: str, arg: str='') -> list:
+'''
+def jsonConverter(file_path: str, file_type: str, arg: str='') -> list:
     df = readFile(file_path, arg)
-    index = []
-    if type(df) == dict:
-        print("\nMerging dataframes\n")
-        df = mergeDF(df)
-    else:
-        df = df.dropna(axis='columns', how='all')
-        df = AdjustValidHeaders(df)
+#    if type(df) == dict:
+#       print("\nMerging dataframes\n")
+#       df = mergeDF(df)
+#    else:
+    if file_type in ['.xlsx', '.xls']:
+        df['sheet'] = json.loads(arg)['sheet_name']
+    df = df.dropna(axis='columns', how='all')
+    df = AdjustValidHeaders(df)
     df = df.assign( **df.select_dtypes(['object', 'datetime','datetime64']).astype(str))
     # Convert DataFrame to JSON
     json_data = df.to_json(orient='records', indent=4)
