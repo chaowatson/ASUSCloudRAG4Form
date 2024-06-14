@@ -8,6 +8,7 @@ def readFile(file_path: str, arg: str='') -> pd.DataFrame:
     READER_MAP = {
         '.xlsx': pd.read_excel,
         '.xls': pd.read_excel,
+        '.csv': pd.read_csv
     }
     #get file type
     _, ext = os.path.splitext(file_path)
@@ -16,7 +17,10 @@ def readFile(file_path: str, arg: str='') -> pd.DataFrame:
     except KeyError:
         raise ValueError(f'Unsupported filetype: {ext}')
     print(f'\nReading from file: {file_path} with argumet: {arg}\n')
-    return reader(file_path, **literal_eval(arg))
+    if arg:
+        return reader(file_path, **literal_eval(arg))
+    else: 
+        return reader(file_path)
 
 def AdjustValidHeaders(df: pd.DataFrame)-> pd.DataFrame:
     headers = list(df.columns.values)
