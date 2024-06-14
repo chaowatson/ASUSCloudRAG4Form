@@ -43,12 +43,13 @@ def generateChunk(file_path: str, token_limit: int) -> str:
             data_list = jsonConverter(file_path, FILE_TYPE, f'{{"sheet_name": "{sheet}"}}')
             headers = str(data_list[0].keys())
 
-            # Add new line before next sheet
+            # Add new line before next sheet except the first line
             if (headers != last_headers or ARGS.split) and last_headers:
                 data_string += new_line
                 token_counter = 0
 
-            print("\nCalculating tokens\n")
+            # Generate output string in chunks
+            print("\nCalculating tokens\n") 
             for row in data_list:
                 tokenized_size = getTokenizedSize(str(row))
                 token_counter += tokenized_size
@@ -57,8 +58,11 @@ def generateChunk(file_path: str, token_limit: int) -> str:
                     data_string += new_line
                 data_string += str(row)
             last_headers = headers
+
     else:
         data_list = jsonConverter(file_path, FILE_TYPE)
+
+        # Generate output string in chunks
         print("\nCalculating tokens\n")
         for row in data_list:
             tokenized_size = getTokenizedSize(str(row))
