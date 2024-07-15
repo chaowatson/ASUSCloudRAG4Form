@@ -1,5 +1,7 @@
-from transformers import LlamaTokenizer
+#from transformers import LlamaTokenizer
+import tiktoken
 
+'''
 def getTokenizedSize(stringIn: str) -> int:
     tokenizer = LlamaTokenizer.from_pretrained(
         'ocisd4/llama_tokenizer_ext_zhtw',
@@ -9,3 +11,11 @@ def getTokenizedSize(stringIn: str) -> int:
     )
 
     return len(tokenizer.tokenize(stringIn))
+'''
+
+def getTokenizedSize(string: str) -> int:
+    enc = tiktoken.get_encoding("cl100k_base")
+    #enc = tiktoken.encoding_for_model("gpt-4")
+    tokens = enc.encode(string)
+
+    return len(tokens)

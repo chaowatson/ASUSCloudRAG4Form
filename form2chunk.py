@@ -35,12 +35,15 @@ def generateChunk(file_path: str, token_limit: int) -> str:
     data_string = ''
     new_line = '\n'
     token_counter = 0
-    if FILE_TYPE in ['.xlsx', '.xls']:
+    if FILE_TYPE in ['.xlsx', '.xls', '.ods']:
         sheets = pd.ExcelFile(file_path).sheet_names
         last_headers = '' # For comparing headers in different sheets 
 
         for sheet in sheets:
             data_list = jsonConverter(file_path, FILE_TYPE, f'{{"sheet_name": "{sheet}"}}')
+            if not len(data_list):
+                continue
+
             headers = str(data_list[0].keys())
 
             # Add new line before next sheet except the first line

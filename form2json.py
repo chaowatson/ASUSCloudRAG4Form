@@ -8,6 +8,7 @@ def readFile(file_path: str, arg: str='') -> pd.DataFrame:
     READER_MAP = {
         '.xlsx': pd.read_excel,
         '.xls': pd.read_excel,
+        '.ods': pd.read_excel,
         '.csv': pd.read_csv
     }
     #get file type
@@ -38,23 +39,7 @@ def AdjustValidHeaders(df: pd.DataFrame)-> pd.DataFrame:
         return AdjustValidHeaders(df)
     else:
         return df
-'''
-def mergeDF(df: dict) -> pd.DataFrame:
-    # merge sheets based on header of first sheet
-    for key, value in df.items() :
-        value['sheet'] = key
-        index = list(value.columns.values)
-        break
-    for key, value in list(df.items()) :
-        value = value.dropna(axis='columns', how='all')
-        value = AdjustValidHeaders(value)
-        value['sheet'] = key
-        df[key]['sheet'] = key
-        if list(value.columns.values) != index:
-            del df[key]
-    df = pd.concat(df.values(), axis=0, ignore_index=True)
-    return df
-'''
+
 def jsonConverter(file_path: str, file_type: str, arg: str='') -> list:
     df = readFile(file_path, arg)
 #    if type(df) == dict:
