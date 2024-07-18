@@ -40,17 +40,26 @@ def AdjustValidHeaders(df: pd.DataFrame)-> pd.DataFrame:
     else:
         return df
 
-def jsonConverter(file_path: str, file_type: str, arg: str='') -> list:
+def jsonConverter(file_path: str, file_type: str, arg: str='', rotate: bool=False) -> list:
     df = readFile(file_path, arg)
-#    if type(df) == dict:
-#       print("\nMerging dataframes\n")
-#       df = mergeDF(df)
-#    else:
+    if rotate :
+        df = df.transpose()
+        df = df.reset_index()
+        new_header = df.iloc[0]
+        df = df[1:]
+        df.columns = new_header
+    print(df)
     if file_type in ['.xlsx', '.xls']:
         df['sheet'] = json.loads(arg)['sheet_name']
     df = df.dropna(axis='columns', how='all')
     df = AdjustValidHeaders(df)
-    df = df.assign( **df.select_dtypes(['object', 'datetime','datetime64']).astype(str))
+   # for col in df.select_dtypes(['datetime', 'datetime64']).columns:
+    #    df[col] = pd.to_datetime(df[col]).astype(str)
+
+    print(df.columns)
+    #print(df.select_dtypes(include=['object', 'datetime', 'datetime64']).astype(str))
+    #df = df.assign( **(df.select_dtypes(['object', 'datetime','datetime64']).astype(str)))
+    df[df.select_dtypes(['object', 'datetime', 'datetime64']).columns] = df.select_dtypes(['object', 'datetime', 'datetime64']).astype(str)
     # Convert DataFrame to JSON
     json_data = df.to_json(orient='records', indent=4)
 

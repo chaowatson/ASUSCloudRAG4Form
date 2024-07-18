@@ -1,3 +1,5 @@
+#! ./python
+
 from token_size import getTokenizedSize
 from form2json import jsonConverter
 import pandas as pd
@@ -18,6 +20,7 @@ def parseArguments():
     parser.add_argument('destination_file', help="path of output file. Ex: ./output.txt")
     parser.add_argument('-t','--token_limit', type=int, default=1000, help="token limit for slicing, default value is 1000")
     parser.add_argument('-s','--split', action='store_true', help="Split each excel sheet even if the content form is exactly the same.")
+    parser.add_argument('-r','--rotate', action='store_true', help="Rotate the form to make column 1 as headers.")
     args = parser.parse_args()
     global TOKEN_LIMIT
     global SRC_FILE_PATH
@@ -40,7 +43,7 @@ def generateChunk(file_path: str, token_limit: int) -> str:
         last_headers = '' # For comparing headers in different sheets 
 
         for sheet in sheets:
-            data_list = jsonConverter(file_path, FILE_TYPE, f'{{"sheet_name": "{sheet}"}}')
+            data_list = jsonConverter(file_path, FILE_TYPE, f'{{"sheet_name": "{sheet}"}}', ARGS.rotate)
             if not len(data_list):
                 continue
 
