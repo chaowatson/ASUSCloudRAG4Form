@@ -41,7 +41,7 @@ def AdjustValidHeaders(df: pd.DataFrame) -> pd.DataFrame:
         return df
 
 def check_empty_column(df: pd.DataFrame) -> bool:
-    return df.isnull().all(axis=1).any()
+    return df.isnull().all(axis=0).any()
 
 def check_empty_row(df: pd.DataFrame) -> bool:
     return df.isnull().all(axis=1).any()
@@ -67,9 +67,6 @@ def split_column(df: pd.DataFrame) -> list:
                 # Append DataFrame for the current block of non-empty columns
                 df_list.append(df[current_block])
                 current_block = []
-            # Start a new block for empty columns
-            if not df[col].isnull().all():
-                df_list.append(df[[col]])
         else:
             if current_block and df[current_block[-1]].isnull().all():
                 # If the last column in the current block was empty, append it first
@@ -84,62 +81,66 @@ def split_column(df: pd.DataFrame) -> list:
     return df_list
 
 def split_row(df: pd.DataFrame) -> list:
-    # Identify rows that are completely empty
+    # Identify rows with all empty values
     is_empty_row = df.isnull().all(axis=1)
 
     if not is_empty_row.any():
-        return [df]  # No empty rows, return original DataFrame
+        return [df]  # No empty rows, return the original DataFrame
 
-    # Find blocks of contiguous empty rows
-    empty_row_blocks = []
+    # Find positions of empty rows
+    empty_row_positions = is_empty_row[is_empty_row].index
+    empty_row_set = set(empty_row_positions)
+
+    # Split rows into non-empty and empty groups
+    df_list = []
     current_block = []
-    for idx, is_empty in enumerate(is_empty_row):
-        if is_empty:
-            if current_block and not is_empty_row[current_block[-1]]:
-                empty_row_blocks.append((current_block[0], idx - 1))
-            current_block = []
+
+    for idx, row in df.iterrows():
+        if idx in empty_row_set:
+            if current_block:
+                # Extract the current block DataFrame
+                block_df = df.loc[current_block]
+                if 0 not in current_block:
+                    # Use the first row of the block as headers if row 0 is not in the block
+                    new_header = block_df.iloc[0]
+                    block_df = block_df[1:]  # Drop the first row
+                    block_df.columns = new_header
+                else:
+                    # Keep the original headers if row 0 is in the block
+                    block_df.columns = df.columns
+                df_list.append(block_df)
+                current_block = []
         else:
-            if current_block and is_empty_row[current_block[-1]]:
-                empty_row_blocks.append((current_block[0], idx - 1))
+            if current_block and df.loc[current_block[-1]].isnull().all():
+                # If the last row in the current block was empty, append it first
+                block_df = df.loc[current_block]
+                if 0 not in current_block:
+                    new_header = block_df.iloc[0]
+                    block_df = block_df[1:]
+                    block_df.columns = new_header
+                else:
+                    block_df.columns = df.columns
+                df_list.append(block_df)
                 current_block = []
             current_block.append(idx)
-
+    
+    # Append the final block if it exists
     if current_block:
-        empty_row_blocks.append((current_block[0], len(df) - 1))
-
-    # Create DataFrames for each block
-    df_list = []
-    start_idx = 0
-    for start, end in empty_row_blocks:
-        # Get the part of the DataFrame between empty row blocks
-        if start > start_idx:
-            df_part = df.iloc[start_idx:start]
-            df_list.append(df_part)
-        start_idx = end + 1
-
-    # Append the final part if necessary
-    if start_idx < len(df):
-        df_list.append(df.iloc[start_idx:])
-
-    # Adjust DataFrames to use the first non-empty row as header
-    final_dfs = []
-    for part in df_list:
-        if not part.empty:
-            part.dropna(how='all', inplace=True)
-            # Find the first non-empty row to use as the header
-            header_row = part.iloc[0]
-            part = part[1:]  # Exclude header row from data
-            part.columns = header_row
-            part.reset_index(drop=True, inplace=True)
-            final_dfs.append(part)
-
-    return final_dfs
+        block_df = df.loc[current_block]
+        if 0 not in current_block:
+            new_header = block_df.iloc[0]
+            block_df = block_df[1:]
+            block_df.columns = new_header
+        else:
+            block_df.columns = df.columns
+        df_list.append(block_df)
+    
+    return df_list
 
 
 def split_form(df_list: list) -> list:
     splited_df_list = []
     for df in df_list:
-        print(df)
         if check_empty_column(df):
             splited_df_list.extend(split_column(df))  # Use extend to merge lists
         elif check_empty_row(df):
@@ -161,17 +162,12 @@ def jsonConverter(file_path: str, file_type: str, arg: str='', rotate: bool=Fals
             new_header = df.iloc[0]
             df = df[1:]
             df.columns = new_header
-        print(df)
         if file_type in ['.xlsx', '.xls']:
             df['sheet'] = json.loads(arg)['sheet_name']
         df = df.dropna(axis='columns', how='all')
+        df = df.dropna(axis='rows', how='any')
         df = AdjustValidHeaders(df)
-       # for col in df.select_dtypes(['datetime', 'datetime64']).columns:
-        #    df[col] = pd.to_datetime(df[col]).astype(str)
 
-        print(df.columns)
-        #print(df.select_dtypes(include=['object', 'datetime', 'datetime64']).astype(str))
-        #df = df.assign( **(df.select_dtypes(['object', 'datetime','datetime64']).astype(str)))
         df[df.select_dtypes(['object', 'datetime', 'datetime64']).columns] = df.select_dtypes(['object', 'datetime', 'datetime64']).astype(str)
         # Convert DataFrame to JSON
         json_data = df.to_json(orient='records', indent=4)
