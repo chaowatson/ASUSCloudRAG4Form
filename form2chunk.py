@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 # Import necessary libraries and modules
 from token_size import getTokenizedSize  # Function to get the size of a tokenized string
 from form2json import jsonConverter  # Function to convert forms to JSON

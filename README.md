@@ -62,7 +62,7 @@ This module contains a function for calculating the tokenized size of a string:
 To process and chunk data from an Excel or CSV file:
 
 ```bash
-python data_chunker.py <source_file> <destination_file> [--token_limit <limit>] [--split] [--rotate]
+python form2chunk.py <source_file> <destination_file> [--token_limit <limit>] [--split] [--rotate]
 ```
 
 - `<source_file>`: Path to the source file (e.g., `./src.xlsx`).
