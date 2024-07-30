@@ -152,6 +152,8 @@ def split_form(df_list: list) -> list:
     return splited_df_list if len(splited_df_list) == len(df_list) else split_form(splited_df_list)
 
 def jsonConverter(file_path: str, file_type: str, arg: str='', rotate: bool=False) -> list:
+    #if file_type == "csv":
+        #arg += " on_bad_lines='skip'"
     df = readFile(file_path, arg)
     df_list = split_form([df])
     json_dict_list = []
@@ -165,7 +167,7 @@ def jsonConverter(file_path: str, file_type: str, arg: str='', rotate: bool=Fals
         if file_type in ['.xlsx', '.xls']:
             df['sheet'] = json.loads(arg)['sheet_name']
         df = df.dropna(axis='columns', how='all')
-        df = df.dropna(axis='rows', how='any')
+        df = df.dropna(axis='rows', how='all')
         df = AdjustValidHeaders(df)
 
         df[df.select_dtypes(['object', 'datetime', 'datetime64']).columns] = df.select_dtypes(['object', 'datetime', 'datetime64']).astype(str)
@@ -176,4 +178,5 @@ def jsonConverter(file_path: str, file_type: str, arg: str='', rotate: bool=Fals
         json_dict_list += json.loads(json_data)
 
     return json_dict_list
+
 
