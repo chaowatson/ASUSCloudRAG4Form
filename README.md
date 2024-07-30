@@ -70,3 +70,6 @@ python form2chunk.py <source_file> <destination_file> [--token_limit <limit>] [-
 - `--token_limit`: Token limit for chunking (default is 1000).
 - `--split`: Flag to split sheets with identical forms.
 - `--rotate`: Flag to rotate the form and use column 1 as headers.
+
+## Author
+This project is authored by Watson Chao.
