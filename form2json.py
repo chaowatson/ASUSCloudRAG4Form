@@ -176,6 +176,10 @@ def jsonConverter(file_path: str, file_type: str, arg: str='', rotate: bool=Fals
 
         # Convert JSON to list
         json_dict_list += json.loads(json_data)
+        for data in json_dict_list:
+            new_data = {k: v for k, v in data.items() if v is not None}
+            data.clear()
+            data.update(new_data)
 
     return json_dict_list
 
